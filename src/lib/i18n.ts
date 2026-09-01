@@ -8,7 +8,7 @@ const resources = {
         eyebrow: 'Base do projeto pronta',
         title: 'Prospecting Bot',
         description:
-          'React, TypeScript, Vite, PrimeReact, TanStack Query e Supabase configurados para evoluir por funcionalidades.',
+          'React, TypeScript, Vite, TanStack Query e Supabase configurados para evoluir por funcionalidades.',
         action: 'Verificar configuração',
         configured: 'As variáveis públicas do Supabase estão configuradas.',
         notConfigured:

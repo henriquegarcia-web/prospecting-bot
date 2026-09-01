@@ -1,12 +1,56 @@
+import { Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
-import { HomePage } from '@/pages/HomePage'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import {
+  LazyDashboardLayout,
+  LazyLeadsPage,
+  LazyLoginPage,
+  LazyOpportunitiesPage,
+  LazyOverviewPage,
+  LazyQualityPage,
+} from '@/router/lazy-routes'
+
+const routeFallback = (
+  <main className="auth-loading" aria-label="Carregando página">
+    <span className="auth-loading__mark" />
+    <span>Carregando...</span>
+  </main>
+)
 
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: (
+      <Suspense fallback={routeFallback}>
+        <ProtectedRoute>
+          <LazyDashboardLayout />
+        </ProtectedRoute>
+      </Suspense>
+    ),
+    children: [
+      {
+        index: true,
+        element: <LazyOverviewPage />,
+      },
+      {
+        path: 'oportunidades',
+        element: <LazyOpportunitiesPage />,
+      },
+      {
+        path: 'leads',
+        element: <LazyLeadsPage />,
+      },
+      {
+        path: 'qualidade',
+        element: <LazyQualityPage />,
+      },
+    ],
+  },
+  {
+    path: '/login',
+    element: <Suspense fallback={routeFallback}><LazyLoginPage /></Suspense>,
   },
   {
     path: '*',
