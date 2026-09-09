@@ -21,8 +21,3 @@ export const LazyOverviewPage = lazy(() =>
     default: module.OverviewPage,
   })),
 )
-export const LazyQualityPage = lazy(() =>
-  import('@/pages/QualityPage').then((module) => ({
-    default: module.QualityPage,
-  })),
-)

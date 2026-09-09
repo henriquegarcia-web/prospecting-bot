@@ -10,8 +10,9 @@ import type {
 
 export const initialDashboardFilters: LeadFilters = {
   query: '',
-  tier: 'all',
+  priority: 'all',
   opportunity: 'all',
+  status: 'all',
 }
 
 export interface DashboardOutletContext {

@@ -1,28 +1,30 @@
+import { useMemo, useState } from 'react'
 import {
   LuChevronLeft,
   LuChevronRight,
-  LuExternalLink,
+  LuEye,
   LuMapPin,
-  LuStar,
 } from 'react-icons/lu'
-import { useMemo, useState } from 'react'
 
-import type { DashboardLead, LeadTier } from '@/types/lead'
-import { offerLabels, statusLabels } from '@/utils/lead-analytics'
-
-const numberFormatter = new Intl.NumberFormat('pt-BR')
+import { LeadDetailsDialog } from '@/components/dashboard/LeadDetailsDialog'
+import { LeadQuickActions } from '@/components/dashboard/LeadQuickActions'
+import { PipelineStatusControl } from '@/components/dashboard/PipelineStatusControl'
+import type { DashboardLead } from '@/types/lead'
+import {
+  offerLabels,
+  pipelineStatusLabels,
+  priorityLabels,
+  qualificationLabels,
+} from '@/utils/lead-analytics'
 
 function locationLabel(lead: DashboardLead) {
   return [lead.city, lead.state].filter(Boolean).join(', ') || 'Local não informado'
 }
 
-function TierBadge({ tier }: { tier: LeadTier | null }) {
-  return <span className={`tier-badge tier-badge--${tier ?? 'none'}`}>{tier ?? '—'}</span>
-}
-
 export function LeadsTable({ leads }: { leads: DashboardLead[] }) {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(8)
+  const [selectedLead, setSelectedLead] = useState<DashboardLead | null>(null)
   const pageCount = Math.max(Math.ceil(leads.length / rowsPerPage), 1)
   const currentPage = Math.min(page, pageCount - 1)
   const first = currentPage * rowsPerPage
@@ -34,83 +36,70 @@ export function LeadsTable({ leads }: { leads: DashboardLead[] }) {
   return (
     <div className="leads-table">
       <div className="table-container">
-        <table aria-label="Leads priorizados para curadoria">
+        <table aria-label="Leads para operação">
           <thead>
             <tr>
               <th>Empresa</th>
               <th>Prioridade</th>
-              <th>Oferta indicada</th>
-              <th>Presença digital</th>
-              <th>Status</th>
-              <th>
-                <span className="sr-only">Abrir no Maps</span>
-              </th>
+              <th>Oportunidade</th>
+              <th>Contato rápido</th>
+              <th>Status operacional</th>
+              <th><span className="sr-only">Abrir dossiê</span></th>
             </tr>
           </thead>
           <tbody>
-            {visibleLeads.map((lead) => {
-              const offer = lead.recommended_offer
-
-              return (
-                <tr key={lead.id}>
-                  <td>
-                    <div className="lead-cell">
-                      <strong>{lead.business_name}</strong>
-                      <span>{lead.primary_category ?? 'Sem categoria'}</span>
-                      <small>
-                        <LuMapPin aria-hidden="true" /> {locationLabel(lead)}
-                      </small>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="priority-cell">
-                      <TierBadge tier={lead.lead_tier} />
-                      <div>
-                        <strong>{lead.lead_priority_score ?? '—'}</strong>
-                        <span>/100</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="offer-pill">
-                      {offer ? offerLabels[offer] : 'Não definida'}
+            {visibleLeads.map((lead) => (
+              <tr key={lead.id}>
+                <td>
+                  <div className="lead-cell">
+                    <strong>{lead.business_name}</strong>
+                    <span>{lead.primary_category ?? 'Sem categoria'}</span>
+                    <small><LuMapPin aria-hidden="true" /> {locationLabel(lead)}</small>
+                  </div>
+                </td>
+                <td>
+                  <div className="priority-cell">
+                    <span className={`priority-badge priority-badge--${lead.priority}`}>
+                      {priorityLabels[lead.priority]}
                     </span>
-                  </td>
-                  <td>
-                    <div className="digital-cell">
-                      <span className={lead.has_website ? 'is-positive' : 'is-muted'}>
-                        {lead.has_website ? 'Com site' : 'Sem site'}
-                      </span>
-                      <span>
-                        <LuStar aria-hidden="true" />{' '}
-                        {lead.rating?.toFixed(1) ?? '—'} ·{' '}
-                        {numberFormatter.format(lead.review_count ?? 0)} avaliações
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`status-pill status-pill--${lead.status}`}>
-                      {statusLabels[lead.status]}
+                    <div><strong>{lead.overall_score}</strong><span>/100</span></div>
+                  </div>
+                  <small className="confidence-label">Score geral</small>
+                </td>
+                <td>
+                  <div className="offer-cell">
+                    <span className="offer-pill">{offerLabels[lead.recommended_offer]}</span>
+                    <small>{lead.approach_angle ?? qualificationLabels[lead.qualification_status]}</small>
+                  </div>
+                </td>
+                <td>
+                  <div className="contact-cell">
+                    <strong className={lead.has_phone ? 'is-positive' : 'is-muted'}>
+                      {lead.has_phone ? 'Telefone disponível' : 'Sem telefone'}
+                    </strong>
+                    <LeadQuickActions lead={lead} />
+                  </div>
+                </td>
+                <td>
+                  <div className="status-cell">
+                    <span className={`status-pill status-pill--${lead.pipeline_status}`}>
+                      {pipelineStatusLabels[lead.pipeline_status]}
                     </span>
-                  </td>
-                  <td>
-                    {lead.google_maps_url ? (
-                      <a
-                        className="table-link"
-                        href={lead.google_maps_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`Abrir ${lead.business_name} no Google Maps`}
-                      >
-                        <LuExternalLink aria-hidden="true" />
-                      </a>
-                    ) : (
-                      <span className="table-link table-link--disabled">—</span>
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
+                    <PipelineStatusControl leadId={lead.id} status={lead.pipeline_status} />
+                  </div>
+                </td>
+                <td>
+                  <button
+                    aria-label={`Abrir dossiê de ${lead.business_name}`}
+                    className="table-link"
+                    onClick={() => setSelectedLead(lead)}
+                    type="button"
+                  >
+                    <LuEye aria-hidden="true" />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -157,6 +146,7 @@ export function LeadsTable({ leads }: { leads: DashboardLead[] }) {
           </button>
         </div>
       </div>
+      {selectedLead ? <LeadDetailsDialog lead={selectedLead} onClose={() => setSelectedLead(null)} /> : null}
     </div>
   )
 }

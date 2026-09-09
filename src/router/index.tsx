@@ -9,7 +9,6 @@ import {
   LazyLoginPage,
   LazyOpportunitiesPage,
   LazyOverviewPage,
-  LazyQualityPage,
 } from '@/router/lazy-routes'
 
 const routeFallback = (
@@ -41,10 +40,6 @@ export const router = createBrowserRouter([
       {
         path: 'leads',
         element: <LazyLeadsPage />,
-      },
-      {
-        path: 'qualidade',
-        element: <LazyQualityPage />,
       },
     ],
   },

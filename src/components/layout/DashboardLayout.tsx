@@ -5,7 +5,6 @@ import {
   useLocation,
 } from 'react-router-dom'
 import {
-  LuBadgeCheck,
   LuLayoutDashboard,
   LuLogOut,
   LuMenu,
@@ -37,10 +36,9 @@ const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
 })
 
 const routeTitles: Record<string, string> = {
-  '/': 'Visão da operação',
+  '/': 'Central de operação',
   '/oportunidades': 'Oportunidades',
   '/leads': 'Base de leads',
-  '/qualidade': 'Qualidade da base',
 }
 
 function getLastUpdateLabel(dates: string[]) {
@@ -69,10 +67,16 @@ export function DashboardLayout() {
   const effectiveFilters = useMemo(
     () => ({
       query: deferredQuery,
-      tier: filters.tier,
+      priority: filters.priority,
       opportunity: filters.opportunity,
+      status: filters.status,
     }),
-    [deferredQuery, filters.opportunity, filters.tier],
+    [
+      deferredQuery,
+      filters.opportunity,
+      filters.priority,
+      filters.status,
+    ],
   )
   const filteredLeads = useMemo(
     () => filterLeads(dashboardQuery.data?.leads ?? [], effectiveFilters),
@@ -83,7 +87,10 @@ export function DashboardLayout() {
     [filteredLeads],
   )
   const hasActiveFilters =
-    filters.query !== '' || filters.tier !== 'all' || filters.opportunity !== 'all'
+    filters.query !== ''
+    || filters.priority !== 'all'
+    || filters.opportunity !== 'all'
+    || filters.status !== 'all'
   const lastUpdated = getLastUpdateLabel(
     (dashboardQuery.data?.leads ?? []).map((lead) => lead.updated_at),
   )
@@ -140,9 +147,6 @@ export function DashboardLayout() {
           <NavLink className={navClassName} to="/leads" onClick={closeMobileMenu}>
             <LuUsers /> Base de leads
           </NavLink>
-          <NavLink className={navClassName} to="/qualidade" onClick={closeMobileMenu}>
-            <LuBadgeCheck /> Qualidade da base
-          </NavLink>
         </nav>
 
         <div className="sidebar__status">
@@ -166,7 +170,7 @@ export function DashboardLayout() {
             <LuMenu />
           </button>
           <div className="topbar__title">
-            <span>Central de curadoria</span>
+            <span>Operação de prospecção</span>
             <strong>{routeTitles[location.pathname] ?? 'Prospect Intelligence'}</strong>
           </div>
           <div className="topbar__actions">

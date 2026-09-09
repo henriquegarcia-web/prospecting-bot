@@ -29,9 +29,10 @@ export function DashboardQueryBoundary({ children }: { children: ReactNode }) {
     <>
       {dashboardQuery.data.sampled ? (
         <div className="sample-notice" role="status">
-          <LuDatabase /> Indicadores calculados sobre os{' '}
+          <LuDatabase /> A listagem exibe os{' '}
           {numberFormatter.format(dashboardQuery.data.leads.length)} leads mais prioritários
-          de um total de {numberFormatter.format(dashboardQuery.data.total)}.
+          de um total de {numberFormatter.format(dashboardQuery.data.total)}. As métricas gerais
+          continuam sendo calculadas no banco.
         </div>
       ) : null}
       {children}

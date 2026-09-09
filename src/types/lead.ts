@@ -1,129 +1,195 @@
-export type LeadSource = 'google_maps'
+export const pipelineStatuses = [
+  'new',
+  'qualified',
+  'disqualified',
+  'archived',
+] as const
 
-export type LeadStatus =
-  | 'pending'
-  | 'queued'
-  | 'contacted'
-  | 'replied'
-  | 'qualified'
-  | 'proposal'
-  | 'negotiation'
-  | 'won'
-  | 'lost'
-  | 'no_response'
-  | 'invalid'
-  | 'do_not_disturb'
+export type PipelineStatus = (typeof pipelineStatuses)[number]
 
-export type LeadTier = 'A+' | 'A' | 'B+' | 'B' | 'C' | 'D'
+export const leadPriorities = ['low', 'medium', 'high', 'hot'] as const
 
-export type RecommendedOffer =
-  | 'google_maps'
-  | 'website'
-  | 'google_maps_and_website'
-  | 'nurture'
-  | 'none'
+export type LeadPriority = (typeof leadPriorities)[number]
 
-export type QualificationStatus =
-  | 'qualified_high'
-  | 'qualified'
-  | 'nurture'
-  | 'low_priority'
+export const qualificationStatuses = [
+  'out_of_niche',
+  'invalid',
+  'limited_contact',
+  'low_priority',
+  'nurture',
+  'qualified',
+  'high_potential',
+] as const
 
-export interface Lead {
+export type QualificationStatus = (typeof qualificationStatuses)[number]
+
+export const recommendedOffers = [
+  'website',
+  'google_maps',
+  'maps_and_website',
+  'audit_first',
+  'no_contact',
+  'invalid',
+] as const
+
+export type RecommendedOffer = (typeof recommendedOffers)[number]
+
+export const websiteTypes = [
+  'none',
+  'own_domain',
+  'social',
+  'messaging',
+  'link_in_bio',
+  'booking',
+  'directory',
+  'hosted_builder',
+  'url_shortener',
+  'invalid',
+] as const
+
+export type WebsiteType = (typeof websiteTypes)[number]
+
+/**
+ * Projection used by the authenticated prospecting dashboard. It mirrors the
+ * post-migration `public.leads` contract and deliberately excludes the free
+ * form `meta` and `enrichment` JSON fields.
+ */
+export interface DashboardLead {
   id: string
-  created_at: string
-  updated_at: string
-  source: LeadSource
-  search_keyword: string
+  lead_key: string
+  source: string
+  search_keyword: string | null
   business_name: string
   primary_category: string | null
   categories: string[]
-  categories_count: number
-  google_place_id: string
-  google_cid: string | null
+  is_nail_business: boolean
+
   google_maps_url: string | null
+
   country: string | null
   state: string | null
   city: string | null
   neighborhood: string | null
   street_address: string | null
   zipcode: string | null
-  latitude: number | null
-  longitude: number | null
+
   phone: string | null
   phone_e164: string | null
   has_phone: boolean
-  website: string | null
+
+  website_url: string | null
+  website_raw_url: string | null
   website_domain: string | null
-  has_website: boolean
-  is_claimed: boolean
+  website_type: WebsiteType
+  website_platform: string | null
+  website_is_valid: boolean
+  website_is_own_domain: boolean
+  has_website_presence: boolean
+  has_own_website: boolean
+  has_social_presence: boolean
+  social_platform: string | null
+
+  google_claimed: boolean
   rating: number | null
-  has_rating: boolean
-  review_count: number | null
+  review_count: number
   has_reviews: boolean
-  photos_count: number | null
+  photo_count: number
   has_photos: boolean
-  low_photo_count: boolean
+  has_hours: boolean
   has_description: boolean
-  has_about: boolean
-  has_business_attributes: boolean
-  has_business_hours: boolean
-  open_days_count: number
-  open_7_days: boolean
-  opens_saturday: boolean
-  opens_sunday: boolean
-  has_weekend_hours: boolean
+  operational: boolean
   permanently_closed: boolean
   temporarily_closed: boolean
-  is_active_business: boolean
-  has_popular_times: boolean
-  has_review_summary: boolean
-  has_review_tags: boolean
-  has_related_businesses: boolean
-  contactable: boolean
-  sales_readiness_score: number | null
-  google_maps_gap_score: number | null
-  google_maps_priority_score: number | null
-  google_maps_tier: LeadTier | null
-  google_maps_reasons: string[]
-  website_gap_score: number | null
-  website_priority_score: number | null
-  website_tier: LeadTier | null
-  website_reasons: string[]
-  lead_priority_score: number | null
-  lead_tier: LeadTier | null
-  recommended_offer: RecommendedOffer | null
-  is_qualified: boolean
-  qualification_status: QualificationStatus | null
-  score_version: number
+  profile_completeness: number | null
+
+  appointment_recommended: boolean
+  accepts_cards: boolean
+  accepts_mobile_payment: boolean
+  has_parking: boolean
+  has_wifi: boolean
+
+  google_maps_score: number
+  website_score: number
+  traction_score: number
+  overall_score: number
+
+  qualification_status: QualificationStatus
+  priority: LeadPriority
+  recommended_offer: RecommendedOffer
+  approach_angle: string | null
+  google_maps_opportunity: boolean
+  website_opportunity: boolean
+  dual_opportunity: boolean
+  qualification_reasons: string[]
+  sales_hooks: string[]
+
+  pipeline_status: PipelineStatus
+  pipeline_eligible: boolean
+  next_action: string | null
+
+  created_at: string
+  updated_at: string
   qualified_at: string | null
-  status: LeadStatus
 }
 
-export type DashboardLead = Pick<
-  Lead,
-  | 'id'
-  | 'updated_at'
-  | 'search_keyword'
-  | 'business_name'
-  | 'primary_category'
-  | 'google_maps_url'
-  | 'state'
-  | 'city'
-  | 'neighborhood'
-  | 'has_phone'
-  | 'has_website'
-  | 'rating'
-  | 'has_rating'
-  | 'review_count'
-  | 'has_photos'
-  | 'has_description'
-  | 'has_business_hours'
-  | 'contactable'
-  | 'google_maps_gap_score'
-  | 'lead_priority_score'
-  | 'lead_tier'
-  | 'recommended_offer'
-  | 'is_qualified'
-  | 'status'
->
+export interface LeadQueueItem {
+  id: string
+  lead_key: string
+  business_name: string
+  phone_e164: string | null
+  city: string | null
+  neighborhood: string | null
+  website_type: WebsiteType
+  website_platform: string | null
+  has_own_website: boolean
+  rating: number | null
+  review_count: number
+  photo_count: number
+  google_maps_score: number
+  website_score: number
+  traction_score: number
+  overall_score: number
+  qualification_status: QualificationStatus
+  priority: LeadPriority
+  recommended_offer: RecommendedOffer
+  approach_angle: string | null
+  google_maps_opportunity: boolean
+  website_opportunity: boolean
+  dual_opportunity: boolean
+  qualification_reasons: string[]
+  sales_hooks: string[]
+  pipeline_status: PipelineStatus
+  next_action: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface LeadMetrics {
+  total_leads: number
+  nail_leads: number
+  contactable_leads: number
+  own_website_leads: number
+  social_only_leads: number
+  link_in_bio_leads: number
+  booking_platform_leads: number
+  hosted_website_leads: number
+  no_website_leads: number
+  google_maps_opportunities: number
+  website_opportunities: number
+  dual_opportunities: number
+  hot_leads: number
+  high_leads: number
+  high_potential_leads: number
+  eligible_leads: number
+  new_leads: number
+  qualified_leads: number
+}
+
+export interface PipelineStatusUpdate {
+  id: string
+  pipeline_status: PipelineStatus
+  qualified_at: string | null
+  updated_at: string
+}
+
+export type Lead = DashboardLead
